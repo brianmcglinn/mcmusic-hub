@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "McMusic Hub Player",
+    "slug": "mcmusic-hub-player",
+    "scheme": "mcmusichubplayer",
+    "version": "1.0.0",
+    "orientation": "landscape",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.mcglinn.mcmusichubplayer",
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {}
+    }
+  }
+}
