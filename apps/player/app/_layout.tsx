@@ -1,14 +1,34 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import {
+  IBMPlexSans_400Regular,
+  IBMPlexSans_500Medium,
+  IBMPlexSans_600SemiBold,
+} from '@expo-google-fonts/ibm-plex-sans';
 import TrackPlayer from '@rntp/player';
+import { colors } from '../src/lib/colors';
 
 // No kiosk mode / BackExitHandler here, unlike McJukebox Player — this
 // app runs on shared Google TVs that need to stay normal, exitable apps
 // between gatherings, not permanently screen-pinned.
 
+// Keep the native splash screen up until fonts are actually ready —
+// without this, a brief flash of the system default font is visible
+// before Space Grotesk/IBM Plex Sans finish loading.
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    SpaceGrotesk_700Bold,
+    IBMPlexSans_400Regular,
+    IBMPlexSans_500Medium,
+    IBMPlexSans_600SemiBold,
+  });
+
   useEffect(() => {
     (async () => {
       try {
@@ -26,10 +46,20 @@ export default function RootLayout() {
     })();
   }, []);
 
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <SafeAreaProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Stack screenOptions={{ headerShown: false }} />
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayoutRootView}>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

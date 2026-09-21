@@ -41,3 +41,49 @@ export interface SearchResult {
   thumbnailUrl?: string | null;
   durationSeconds?: number | null;
 }
+
+// Browse types — real shapes, from McJukebox's actual types.ts (Plex) and
+// its recovered real edge function (Spotify), not guessed.
+
+export interface PlexArtist {
+  ratingKey: string;
+  name: string;
+  thumbnailUrl: string | null;
+}
+
+export interface PlexAlbum {
+  ratingKey: string;
+  title: string;
+  year: number | null;
+  thumbnailUrl: string | null;
+  // Only present when returned from listPlexAlbumsForGenre — genre
+  // browsing skips a separate artist-selection step, so the artist name
+  // rides along with the album instead.
+  artistName?: string | null;
+}
+
+export interface PlexFilterValue {
+  key: string;
+  fastKey: string | null;
+  title: string;
+}
+
+export interface PlexPlaylist {
+  ratingKey: string;
+  title: string;
+  trackCount: number;
+  thumbnailUrl: string | null;
+}
+
+export interface SpotifyArtist {
+  id: string;
+  name: string;
+  thumbnailUrl: string | null;
+}
+
+export interface SpotifyAlbum {
+  id: string;
+  title: string;
+  year: number | null;
+  thumbnailUrl: string | null;
+}

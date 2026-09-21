@@ -14,28 +14,53 @@ full architecture and reasoning.
   Remote's job entirely.
 - `apps/remote/` — mobile app guests use to search and add songs. Picks
   which active session ("gathering") to join, then hands songs off to
-  whichever Player is running that session.
+  whichever Player is running that session. Also renders the queue
+  itself, with Battle Mode's conceal/reveal logic.
+- `supabase/functions/spotify-search/` — the one server-side piece.
+  Spotify search needs Client Credentials, which needs a secret that can
+  never live in a mobile app bundle — Plex and YouTube search call their
+  APIs directly from Remote and need no function of their own.
 - `docs/schema.sql` — the Supabase schema both apps talk to.
 - `docs/design-doc.md` — full v2 design doc.
 
-## Getting started (each app)
+## Getting started
 
 ```bash
+# Each app
 cd apps/player   # or apps/remote
 npm install
 cp .env.example .env
-# fill in .env with your Supabase URL + anon key
+# fill in .env — see each file for exactly which vars it needs
 npx expo start --dev-client   # player needs a dev client (custom native module)
 npx expo start                # remote can usually run in plain Expo Go
+
+# The edge function (once, from the repo root)
+supabase functions deploy spotify-search
+supabase secrets set SPOTIFY_CLIENT_ID=... SPOTIFY_CLIENT_SECRET=...
 ```
 
 ## Status
 
-Fresh v2 scaffold. Player has a working session-registration +
-queue-consumption hook (`useSessionQueue`) and a simplified root screen.
-Everything else — per-source now-playing rendering, the ported Spotify
-native module, Remote's search/session-picker UI — is still to be built.
-See `docs/design-doc.md` for what's confirmed vs. still open.
+Player: session registration, queue consumption, and all three source
+players are wired and complete on the JS/TS side. The native
+`spotify-remote` module is fully ported (Kotlin wrapper + the real SDK
+`.aar`) — the one remaining step is registering McMusic Hub Player's own
+Spotify Developer Dashboard app (see
+`apps/player/modules/spotify-remote/README.md`), since McJukebox's
+registration is tied to its own package identity and won't authorize
+this app.
+
+Remote: name entry, session picker, search (all three sources) and the
+mode-aware queue view are all built. The Spotify search edge function is
+a from-scratch reconstruction of Spotify's standard Client Credentials +
+Search flow, not a verified port of McJukebox's actual deployed
+function (that source wasn't available) — worth testing directly once
+deployed.
+
+Neither app has any real visual design applied yet — both are
+functional-first passes, plain default styling, no neon theming. See
+`docs/design-doc.md` for what's confirmed vs. still open at the
+architecture level.
 
 ## A note on the two package.json files
 
@@ -44,5 +69,4 @@ already-working package.json, with the admin-reorder library and what
 looked like an abandoned OAuth-based Spotify auth attempt (superseded by
 the native App Remote module) left out. Remote's is a reasonable
 estimate — lighter, no native playback modules — since McJukebox Remote's
-actual package.json was never inspected. Treat Remote's as a starting
-point to adjust once real screens are being built against it.
+actual package.json was never inspected.
